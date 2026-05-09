@@ -12,18 +12,7 @@ const FONT_OPTIONS = [
   { label: 'XL', px: 36 },
 ]
 
-const ctrlBtnBase: React.CSSProperties = {
-  borderRadius: '6px',
-  padding: '8px 14px',
-  fontSize: '13px',
-  fontWeight: 600,
-  cursor: 'pointer',
-  border: '1px solid var(--line)',
-  transition: 'all 0.12s',
-  minWidth: '36px',
-}
-
-const iconBtnBase: React.CSSProperties = {
+const iconBtn: React.CSSProperties = {
   background: 'var(--surface-3)',
   color: 'var(--dim)',
   border: '1px solid var(--line)',
@@ -33,13 +22,29 @@ const iconBtnBase: React.CSSProperties = {
   fontWeight: 700,
   cursor: 'pointer',
   lineHeight: 1,
+  transition: 'all 0.12s',
+}
+
+function ctrlBtn(active: boolean): React.CSSProperties {
+  return {
+    background: active ? 'var(--gold)'  : 'var(--surface-3)',
+    color:      active ? 'var(--bg)'    : 'var(--dim)',
+    border:     active ? '1px solid transparent' : '1px solid var(--line)',
+    borderRadius: '6px',
+    padding: '8px 14px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    minWidth: '36px',
+    transition: 'all 0.12s',
+  }
 }
 
 export default function SongPage({ song }: { song: Song }) {
   const [semitones, setSemitones] = useState(0)
-  const [fontIdx,   setFontIdx]   = useState(1) // M default
+  const [fontIdx,   setFontIdx]   = useState(1)
   const [playing,   setPlaying]   = useState(false)
-  const [speed,     setSpeed]     = useState(3)  // 1–10
+  const [speed,     setSpeed]     = useState(3)
 
   const rafRef      = useRef<number | null>(null)
   const accumRef    = useRef(0)
@@ -51,7 +56,7 @@ export default function SongPage({ song }: { song: Song }) {
   const transposedKey = song.key ? transposeKey(song.key, semitones) : ''
   const lines         = parseContent(transposeContent(song.content, semitones))
 
-  // ── Wake lock ────────────────────────────────────────────────
+  // ── Wake lock ──────────────────────────────────────────────
   const acquireWakeLock = useCallback(async () => {
     if ('wakeLock' in navigator) {
       try {
@@ -60,7 +65,6 @@ export default function SongPage({ song }: { song: Song }) {
         return
       } catch {}
     }
-    // Canvas-stream fallback — keeps Samsung TV screen awake
     try {
       const canvas = document.createElement('canvas')
       canvas.width = canvas.height = 1
@@ -70,8 +74,7 @@ export default function SongPage({ song }: { song: Song }) {
       video.srcObject  = stream
       video.muted      = true
       video.loop       = true
-      video.style.cssText =
-        'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0'
+      video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0'
       document.body.appendChild(video)
       videoRef.current = video
       await video.play()
@@ -80,9 +83,7 @@ export default function SongPage({ song }: { song: Song }) {
 
   useEffect(() => {
     acquireWakeLock()
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') acquireWakeLock()
-    }
+    const onVisible = () => { if (document.visibilityState === 'visible') acquireWakeLock() }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       wakeLockRef.current?.release()
@@ -92,7 +93,7 @@ export default function SongPage({ song }: { song: Song }) {
     }
   }, [acquireWakeLock])
 
-  // ── Auto scroll ───────────────────────────────────────────────
+  // ── Auto scroll ────────────────────────────────────────────
   useEffect(() => {
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
     if (!playing) return
@@ -103,10 +104,7 @@ export default function SongPage({ song }: { song: Song }) {
     const tick = () => {
       accumRef.current += pxPerFrame
       const px = Math.floor(accumRef.current)
-      if (px > 0) {
-        window.scrollBy(0, px)
-        accumRef.current -= px
-      }
+      if (px > 0) { window.scrollBy(0, px); accumRef.current -= px }
       if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10) {
         setPlaying(false)
         return
@@ -117,7 +115,7 @@ export default function SongPage({ song }: { song: Song }) {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   }, [playing, speed])
 
-  // Space → toggle play (when not in a form element)
+  // Space → toggle play
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName
@@ -139,20 +137,10 @@ export default function SongPage({ song }: { song: Song }) {
     })
   }
 
-  function ctrlBtn(active: boolean): React.CSSProperties {
-    return {
-      ...ctrlBtnBase,
-      background: active ? 'var(--gold)' : 'var(--surface-3)',
-      color:      active ? 'var(--bg)'  : 'var(--dim)',
-      border:     active ? '1px solid transparent' : '1px solid var(--line)',
-    }
-  }
-
-  // ── Render ────────────────────────────────────────────────────
   return (
     <>
       {/* Hero */}
-      <div style={{ paddingBottom: '40px' }}>
+      <div className="fade-up" style={{ paddingBottom: '32px' }}>
         <Link
           href="/songs"
           style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '28px' }}
@@ -162,7 +150,7 @@ export default function SongPage({ song }: { song: Song }) {
 
         <h1
           style={{
-            fontSize: 'clamp(30px, 5vw, 64px)',
+            fontSize: 'clamp(28px, 5vw, 64px)',
             fontWeight: 800,
             lineHeight: 1.1,
             margin: '0 0 14px',
@@ -174,9 +162,9 @@ export default function SongPage({ song }: { song: Song }) {
         </h1>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
-          <span style={{ color: 'var(--dim)', fontSize: '17px' }}>
+          <span style={{ color: 'var(--dim)', fontSize: '16px' }}>
             {song.artist}
-            {song.album && <> &bull; <em style={{ fontStyle: 'normal' }}>{song.album}</em></>}
+            {song.album && <> &bull; {song.album}</>}
             {song.year  && <> &bull; {song.year}</>}
           </span>
           {song.capo > 0 && (
@@ -186,43 +174,29 @@ export default function SongPage({ song }: { song: Song }) {
           )}
         </div>
 
-        {/* Setup controls — transpose + font size */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
-            flexWrap: 'wrap',
-            padding: '18px 24px',
-            background: 'var(--surface)',
-            border: '1px solid var(--line)',
-            borderRadius: '10px',
-          }}
-        >
+        {/* Setup controls */}
+        <div className="setup-controls">
           {/* Transpose */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Key</span>
-            <button onClick={() => changeTranspose(-1)} style={iconBtnBase} aria-label="Transpose down">−</button>
+            <button onClick={() => changeTranspose(-1)} style={iconBtn} aria-label="Transpose down">−</button>
             <span style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--gold)', fontWeight: 700, fontSize: '16px', minWidth: '36px', textAlign: 'center' }}>
               {transposedKey || song.key || '—'}
             </span>
-            <button onClick={() => changeTranspose(+1)} style={iconBtnBase} aria-label="Transpose up">+</button>
+            <button onClick={() => changeTranspose(+1)} style={iconBtn} aria-label="Transpose up">+</button>
             {semitones !== 0 && (
               <>
                 <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'var(--font-geist-mono)' }}>
                   {semitones > 0 ? '+' : ''}{semitones}
                 </span>
-                <button
-                  onClick={() => setSemitones(0)}
-                  style={{ ...iconBtnBase, fontSize: '11px', padding: '6px 10px' }}
-                >
+                <button onClick={() => setSemitones(0)} style={{ ...iconBtn, fontSize: '11px', padding: '6px 10px' }}>
                   Reset
                 </button>
               </>
             )}
           </div>
 
-          <div style={{ width: '1px', height: '24px', background: 'var(--line)' }} />
+          <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
 
           {/* Font size */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -238,11 +212,13 @@ export default function SongPage({ song }: { song: Song }) {
 
       {/* Song content */}
       <div
+        className="fade-up-delay"
         style={{
           fontFamily: 'var(--font-geist-mono), monospace',
           fontSize: `${fontSize}px`,
           lineHeight: 1.9,
           paddingBottom: '180px',
+          transition: 'font-size 0.2s ease',
         }}
       >
         {lines.map((line, i) => {
@@ -269,26 +245,8 @@ export default function SongPage({ song }: { song: Song }) {
         })}
       </div>
 
-      {/* Floating play/pause pill — always visible */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 50,
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: '60px',
-          padding: '10px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(8px)',
-          whiteSpace: 'nowrap',
-        }}
-      >
+      {/* Floating pill */}
+      <div className={`floating-pill${playing ? ' pill-playing' : ''}`}>
         <button
           onClick={() => setPlaying(p => !p)}
           style={{
@@ -296,18 +254,18 @@ export default function SongPage({ song }: { song: Song }) {
             color: playing ? '#fff' : 'var(--bg)',
             border: 'none',
             borderRadius: '40px',
-            padding: '10px 28px',
+            padding: '10px 24px',
             fontSize: '15px',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.15s',
-            minWidth: '110px',
+            minWidth: '100px',
           }}
         >
           {playing ? '⏸ Pause' : '▶ Play'}
         </button>
 
-        <div style={{ width: '1px', height: '28px', background: 'var(--line)' }} />
+        <div style={{ width: '1px', height: '28px', background: 'var(--line)', flexShrink: 0 }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Speed</span>
@@ -317,15 +275,15 @@ export default function SongPage({ song }: { song: Song }) {
             max={10}
             value={speed}
             onChange={e => setSpeed(Number(e.target.value))}
-            style={{ width: '100px', accentColor: 'var(--gold)' }}
+            style={{ width: '90px', accentColor: 'var(--gold)' }}
             aria-label="Scroll speed"
           />
-          <span style={{ fontSize: '13px', color: 'var(--gold)', minWidth: '18px', textAlign: 'center', fontFamily: 'var(--font-geist-mono)', fontWeight: 700 }}>
+          <span style={{ fontSize: '13px', color: 'var(--gold)', minWidth: '16px', textAlign: 'center', fontFamily: 'var(--font-geist-mono)', fontWeight: 700 }}>
             {speed}
           </span>
         </div>
 
-        <div style={{ width: '1px', height: '28px', background: 'var(--line)' }} />
+        <div style={{ width: '1px', height: '28px', background: 'var(--line)', flexShrink: 0 }} />
 
         <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
           <kbd style={{ background: 'var(--surface-3)', padding: '2px 7px', borderRadius: '4px', fontFamily: 'var(--font-geist-mono)', fontSize: '11px' }}>Space</kbd>

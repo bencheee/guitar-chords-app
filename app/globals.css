@@ -108,3 +108,193 @@ input[type="range"]:focus-visible {
   outline-offset: 4px;
   border-radius: 4px;
 }
+
+/* ── Animations ────────────────────────────────────────────── */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+  50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 28px rgba(201,168,76,0.22); }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.fade-up  { animation: fade-up 0.4s ease-out both; }
+.fade-up-delay { animation: fade-up 0.4s ease-out 0.1s both; }
+.pill-playing { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+/* ── Layout helpers ────────────────────────────────────────── */
+
+.page-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 40px;
+}
+
+/* ── Song card ─────────────────────────────────────────────── */
+
+.song-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  border-radius: 10px;
+  padding: 22px 26px;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 150px;
+  transition: background 0.12s, border-left-color 0.12s, transform 0.15s, box-shadow 0.15s;
+  outline-offset: 4px;
+}
+
+.song-card:hover,
+.song-card:focus-visible {
+  background: var(--surface-2);
+  border-left-color: var(--gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+}
+
+/* ── Song grid ─────────────────────────────────────────────── */
+
+.song-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* ── Floating play pill ────────────────────────────────────── */
+
+.floating-pill {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 60px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Setup controls (song page) ────────────────────────────── */
+
+.setup-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 0;
+}
+
+/* ── Mobile (≤ 640px) ──────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .page-header-inner {
+    padding: 0 20px;
+    height: 60px;
+  }
+
+  .page-main {
+    padding: 28px 16px;
+  }
+
+  .song-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .song-card {
+    padding: 16px;
+    min-height: 120px;
+  }
+
+  .floating-pill {
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
+    transform: none;
+    border-radius: 16px;
+    padding: 10px 14px;
+    gap: 10px;
+    white-space: normal;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .setup-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+  }
+}
+
+/* ── Very small (≤ 380px) ──────────────────────────────────── */
+
+@media (max-width: 380px) {
+  .song-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Tablet (641px – 1024px) ───────────────────────────────── */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .page-header-inner { padding: 0 24px; }
+  .page-main { padding: 36px 24px; }
+}
+
+/* ── TV / large (≥ 1600px) ─────────────────────────────────── */
+
+@media (min-width: 1600px) {
+  .song-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+  }
+
+  .song-card {
+    min-height: 180px;
+    padding: 28px 32px;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+    outline-offset: 5px;
+  }
+
+  .floating-pill {
+    padding: 14px 28px;
+    gap: 20px;
+    bottom: 40px;
+  }
+}

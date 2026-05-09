@@ -4,13 +4,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="flex items-center gap-2 no-underline">
+        <div className="page-header-inner">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ color: 'var(--gold)', fontSize: '20px' }}>♪</span>
-              <span style={{ fontWeight: 600, fontSize: '16px', color: 'var(--text)' }}>
-                Chord Admin
-              </span>
+              <span style={{ fontWeight: 600, fontSize: '16px', color: 'var(--text)' }}>Chord Admin</span>
             </Link>
             <Link
               href="/admin/new"
@@ -27,15 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               + New Song
             </Link>
           </div>
-          <Link
-            href="/songs"
-            style={{ color: 'var(--dim)', fontSize: '14px', textDecoration: 'none' }}
-          >
+          <Link href="/songs" style={{ color: 'var(--dim)', fontSize: '14px', textDecoration: 'none' }}>
             View Site →
           </Link>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-6 py-8">{children}</main>
+      <main className="page-main">{children}</main>
     </div>
   )
 }
