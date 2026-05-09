@@ -87,7 +87,7 @@ See [CLAUDE.md](./CLAUDE.md) for the full development plan and phase tracking.
 
 | Phase | Description                        | Status     |
 |-------|------------------------------------|------------|
-| 1     | Project setup, Supabase, Vercel    | Not started |
+| 1     | Project setup, Supabase, Vercel    | Complete ✓  |
 | 2     | API layer (CRUD routes)            | Not started |
 | 3     | Admin UI                           | Not started |
 | 4     | ChordPro engine + transpose        | Not started |
