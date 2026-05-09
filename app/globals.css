@@ -278,6 +278,30 @@ input[type="range"]:focus-visible {
   }
 }
 
+/* ── Admin form layout ─────────────────────────────────────── */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* On mobile: single column, hide the right preview column, show preview button */
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-preview-col { display: none; }
+  .form-preview-btn { display: inline-flex !important; }
+}
+
+/* On desktop: show right preview column, hide the preview button */
+@media (min-width: 641px) {
+  .form-preview-col { display: block; }
+  .form-preview-btn { display: none !important; }
+}
+
 /* ── Very small (≤ 380px) ──────────────────────────────────── */
 
 @media (max-width: 380px) {
