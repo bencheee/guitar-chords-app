@@ -107,7 +107,7 @@ Song {
 | 3     | Admin UI                           | Complete ✓  |
 | 4     | ChordPro engine + transpose        | Complete ✓  |
 | 5     | Frontend library page              | Complete ✓  |
-| 6     | Song page (scroll, wake lock, etc) | Not started |
+| 6     | Song page (scroll, wake lock, etc) | Complete ✓  |
 | 7     | Design & responsiveness            | Not started |
 | 8     | Deployment & TV testing            | Not started |
 
