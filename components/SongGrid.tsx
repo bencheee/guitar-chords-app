@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { SongSummary } from '@/lib/types'
 
 type SortField = 'title' | 'artist' | 'year'
@@ -16,21 +15,64 @@ const SORT_LABELS: Record<SortField, string> = {
   year:   'Year',
 }
 
+function sortBtn(active: boolean): React.CSSProperties {
+  return {
+    background: active ? 'var(--gold)' : 'var(--surface)',
+    color:      active ? 'var(--bg)'  : 'var(--dim)',
+    border:     active ? '1px solid transparent' : '1px solid var(--line)',
+    padding: '11px 18px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.15s',
+  }
+}
+
 export default function SongGrid({ songs }: Props) {
-  const router = useRouter()
-  const [search, setSearch] = useState('')
-  const [sort,   setSort]   = useState<SortField>('title')
+  const [search,         setSearch]         = useState('')
+  const [sort,           setSort]           = useState<SortField>('title')
+  const [compact,        setCompact]        = useState(false)
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(null)
+
   const searchRef = useRef<HTMLInputElement>(null)
   const cardRefs  = useRef<(HTMLAnchorElement | null)[]>([])
 
+  // Letters that have at least one artist starting with them
+  const availableLetters = useMemo(() => {
+    const set = new Set(songs.map(s => s.artist[0]?.toUpperCase()).filter(Boolean))
+    return [...set].sort()
+  }, [songs])
+
+  // Unique artists for the selected letter
+  const artistsForLetter = useMemo(() => {
+    if (!selectedLetter) return []
+    const set = new Set(
+      songs
+        .filter(s => s.artist[0]?.toUpperCase() === selectedLetter)
+        .map(s => s.artist)
+    )
+    return [...set].sort()
+  }, [songs, selectedLetter])
+
   const filtered = useMemo(() => {
+    let result = [...songs]
+
+    if (selectedArtist) {
+      result = result.filter(s => s.artist === selectedArtist)
+    } else if (selectedLetter) {
+      result = result.filter(s => s.artist[0]?.toUpperCase() === selectedLetter)
+    }
+
     const q = search.toLowerCase().trim()
-    const result = q
-      ? songs.filter(s =>
-          s.title.toLowerCase().includes(q) ||
-          s.artist.toLowerCase().includes(q)
-        )
-      : [...songs]
+    if (q) {
+      result = result.filter(s =>
+        s.title.toLowerCase().includes(q) ||
+        s.artist.toLowerCase().includes(q)
+      )
+    }
 
     result.sort((a, b) => {
       if (sort === 'year') return (b.year ?? 0) - (a.year ?? 0)
@@ -39,9 +81,20 @@ export default function SongGrid({ songs }: Props) {
       return av.localeCompare(bv)
     })
     return result
-  }, [songs, search, sort])
+  }, [songs, search, sort, selectedLetter, selectedArtist])
+
+  function selectLetter(letter: string) {
+    if (selectedLetter === letter) {
+      setSelectedLetter(null)
+      setSelectedArtist(null)
+    } else {
+      setSelectedLetter(letter)
+      setSelectedArtist(null)
+    }
+  }
 
   function detectColumns(): number {
+    if (compact) return 1
     const refs = cardRefs.current.filter((r): r is HTMLAnchorElement => r !== null)
     if (refs.length < 2) return 1
     const firstTop = refs[0].getBoundingClientRect().top
@@ -79,18 +132,13 @@ export default function SongGrid({ songs }: Props) {
     if (e.key === 'ArrowDown') { e.preventDefault(); cardRefs.current[0]?.focus() }
   }
 
+  const isFiltered = selectedLetter || selectedArtist || search.trim()
+
   return (
     <div className="fade-up">
-      {/* Search + Sort */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '36px',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
+
+      {/* ── Search + Sort + Compact toggle ── */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           ref={searchRef}
           type="search"
@@ -102,38 +150,103 @@ export default function SongGrid({ songs }: Props) {
         />
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {(Object.keys(SORT_LABELS) as SortField[]).map(s => (
-            <button
-              key={s}
-              onClick={() => setSort(s)}
-              style={{
-                background: sort === s ? 'var(--gold)' : 'var(--surface)',
-                color:      sort === s ? 'var(--bg)'  : 'var(--dim)',
-                border:     sort === s ? '1px solid transparent' : '1px solid var(--line)',
-                padding: '11px 18px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s',
-              }}
-            >
+            <button key={s} onClick={() => setSort(s)} style={sortBtn(sort === s)}>
               {SORT_LABELS[s]}
             </button>
           ))}
+          <button
+            onClick={() => setCompact(c => !c)}
+            title={compact ? 'Switch to grid view' : 'Switch to compact view'}
+            style={{ ...sortBtn(compact), padding: '11px 15px', fontSize: '17px', lineHeight: 1 }}
+          >
+            {compact ? '⊞' : '☰'}
+          </button>
         </div>
       </div>
 
-      {/* Result count */}
-      {search && (
+      {/* ── A–Z letter bar ── */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '4px',
+        marginBottom: artistsForLetter.length > 0 ? '12px' : '32px',
+      }}>
+        {availableLetters.map(letter => (
+          <button
+            key={letter}
+            onClick={() => selectLetter(letter)}
+            style={{
+              background: selectedLetter === letter ? 'var(--gold)' : 'transparent',
+              color:      selectedLetter === letter ? 'var(--bg)'   : 'var(--dim)',
+              border:     selectedLetter === letter ? '1px solid transparent' : '1px solid var(--line)',
+              borderRadius: '6px',
+              padding: '5px 0',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              width: '34px',
+              textAlign: 'center',
+              transition: 'all 0.12s',
+              fontFamily: 'var(--font-geist-mono)',
+            }}
+          >
+            {letter}
+          </button>
+        ))}
+        {selectedLetter && (
+          <button
+            onClick={() => { setSelectedLetter(null); setSelectedArtist(null) }}
+            style={{
+              background: 'transparent',
+              color: 'var(--muted)',
+              border: '1px solid var(--line)',
+              borderRadius: '6px',
+              padding: '5px 10px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.12s',
+            }}
+          >
+            ✕ Clear
+          </button>
+        )}
+      </div>
+
+      {/* ── Artist chips ── */}
+      {artistsForLetter.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+          {artistsForLetter.map(artist => (
+            <button
+              key={artist}
+              onClick={() => setSelectedArtist(a => a === artist ? null : artist)}
+              style={{
+                background: selectedArtist === artist ? 'var(--gold)'     : 'var(--surface-2)',
+                color:      selectedArtist === artist ? 'var(--bg)'       : 'var(--text)',
+                border:     selectedArtist === artist ? '1px solid transparent' : '1px solid var(--line)',
+                borderRadius: '20px',
+                padding: '6px 18px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.12s',
+              }}
+            >
+              {artist}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Result summary ── */}
+      {isFiltered && filtered.length > 0 && (
         <p style={{ color: 'var(--muted)', marginBottom: '20px', fontSize: '14px' }}>
-          {filtered.length === 0
-            ? `No results for "${search}"`
-            : `${filtered.length} result${filtered.length !== 1 ? 's' : ''} for "${search}"`}
+          {filtered.length} song{filtered.length !== 1 ? 's' : ''}
+          {selectedArtist ? ` by ${selectedArtist}` : selectedLetter ? ` · artists starting with ${selectedLetter}` : ''}
+          {search.trim() ? ` matching "${search.trim()}"` : ''}
         </p>
       )}
 
-      {/* Empty state */}
+      {/* ── Empty state ── */}
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '100px 32px', color: 'var(--muted)' }}>
           <div style={{ fontSize: '52px', marginBottom: '20px', opacity: 0.3 }}>♪</div>
@@ -143,8 +256,31 @@ export default function SongGrid({ songs }: Props) {
         </div>
       )}
 
-      {/* Grid */}
-      {filtered.length > 0 && (
+      {/* ── Compact list ── */}
+      {filtered.length > 0 && compact && (
+        <div style={{ borderTop: '1px solid var(--line)' }}>
+          {filtered.map((song, idx) => (
+            <a
+              key={song.id}
+              ref={el => { cardRefs.current[idx] = el }}
+              href={`/songs/${song.id}`}
+              onKeyDown={e => handleCardKey(e, idx)}
+              tabIndex={0}
+              className="song-row"
+            >
+              <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '15px' }}>
+                {song.title}
+              </span>
+              <span style={{ color: 'var(--muted)', fontSize: '13px', flexShrink: 0, marginLeft: '16px' }}>
+                {song.artist}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* ── Card grid ── */}
+      {filtered.length > 0 && !compact && (
         <div className="song-grid">
           {filtered.map((song, idx) => (
             <a

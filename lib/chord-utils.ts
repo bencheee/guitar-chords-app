@@ -31,10 +31,16 @@ export function transposeKey(key: string, semitones: number): string {
   return transposeChordName(key, semitones)
 }
 
+export interface Segment {
+  chord: string  // chord name, or '' for leading lyric text with no chord above
+  lyric: string  // lyric text that follows (or sits under) this chord
+}
+
 export interface ParsedLine {
   type: 'chord-lyrics' | 'text' | 'empty'
   chordLine: string
   lyricsLine: string
+  segments: Segment[]
 }
 
 export function parseContent(content: string): ParsedLine[] {
@@ -42,8 +48,8 @@ export function parseContent(content: string): ParsedLine[] {
 }
 
 function parseLine(line: string): ParsedLine {
-  if (!line.trim()) return { type: 'empty', chordLine: '', lyricsLine: '' }
-  if (!line.includes('[')) return { type: 'text', chordLine: '', lyricsLine: line }
+  if (!line.trim()) return { type: 'empty', chordLine: '', lyricsLine: '', segments: [] }
+  if (!line.includes('[')) return { type: 'text', chordLine: '', lyricsLine: line, segments: [] }
 
   const pattern = /\[([^\]]+)\]/g
   const positions: { pos: number; chord: string }[] = []
@@ -70,5 +76,17 @@ function parseLine(line: string): ParsedLine {
     }
   }
 
-  return { type: 'chord-lyrics', chordLine, lyricsLine: lyrics }
+  // Build segments: each chord paired with the lyric text that follows it
+  const segments: Segment[] = []
+  if (positions.length > 0 && positions[0].pos > 0) {
+    // Leading lyric text before the first chord
+    segments.push({ chord: '', lyric: lyrics.slice(0, positions[0].pos) })
+  }
+  for (let i = 0; i < positions.length; i++) {
+    const { pos, chord } = positions[i]
+    const nextPos = i + 1 < positions.length ? positions[i + 1].pos : lyrics.length
+    segments.push({ chord, lyric: lyrics.slice(pos, nextPos) })
+  }
+
+  return { type: 'chord-lyrics', chordLine, lyricsLine: lyrics, segments }
 }

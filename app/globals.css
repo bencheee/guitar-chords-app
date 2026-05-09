@@ -181,6 +181,25 @@ input[type="range"]:focus-visible {
   gap: 16px;
 }
 
+/* ── Compact song row ──────────────────────────────────────── */
+
+.song-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.song-row:hover,
+.song-row:focus-visible {
+  background: var(--surface-2);
+}
+
 /* ── Floating play pill ────────────────────────────────────── */
 
 .floating-pill {

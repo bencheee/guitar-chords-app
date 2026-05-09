@@ -40,6 +40,17 @@ function ctrlBtn(active: boolean): React.CSSProperties {
   }
 }
 
+// Split a lyric string into word-level units that can be individually wrapped.
+// Each unit is a word plus its trailing spaces (so wrapping happens naturally).
+// Leading spaces are attached to the first word so indentation is preserved.
+function splitIntoWordTokens(lyric: string): string[] {
+  const leadingSpace = lyric.match(/^\s+/)?.[0] ?? ''
+  const words = lyric.trimStart().match(/\S+\s*/g) ?? []
+  if (words.length === 0) return [lyric || ' ']
+  words[0] = leadingSpace + words[0]
+  return words
+}
+
 export default function SongPage({ song }: { song: Song }) {
   const [semitones, setSemitones] = useState(0)
   const [fontIdx,   setFontIdx]   = useState(1)
@@ -216,7 +227,6 @@ export default function SongPage({ song }: { song: Song }) {
         style={{
           fontFamily: 'var(--font-geist-mono), monospace',
           fontSize: `${fontSize}px`,
-          lineHeight: 1.9,
           paddingBottom: '180px',
           transition: 'font-size 0.2s ease',
         }}
@@ -227,19 +237,50 @@ export default function SongPage({ song }: { song: Song }) {
           }
           if (line.type === 'text') {
             return (
-              <div key={i} style={{ whiteSpace: 'pre', color: 'var(--text)' }}>
+              <div key={i} style={{ whiteSpace: 'pre-wrap', color: 'var(--text)', lineHeight: 1.9 }}>
                 {line.lyricsLine}
               </div>
             )
           }
+          // chord-lyrics: break each segment's lyric into word-level tokens so the
+          // whole line can wrap on narrow screens while keeping each chord above its word
+          const tokens = line.segments.flatMap(({ chord, lyric }) =>
+            splitIntoWordTokens(lyric).map((word, idx) => ({
+              chord: idx === 0 ? chord : '',
+              word,
+            }))
+          )
           return (
-            <div key={i}>
-              <div style={{ whiteSpace: 'pre', color: 'var(--gold)', fontWeight: 700, fontSize: `${chordFontSize}px` }}>
-                {line.chordLine}
-              </div>
-              <div style={{ whiteSpace: 'pre', color: 'var(--text)' }}>
-                {line.lyricsLine || ' '}
-              </div>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+                rowGap: `${Math.round(fontSize * 0.5)}px`,
+                marginBottom: `${Math.round(fontSize * 0.9)}px`,
+              }}
+            >
+              {tokens.map(({ chord, word }, j) => (
+                <span
+                  key={j}
+                  style={{ display: 'inline-flex', flexDirection: 'column', whiteSpace: 'pre' }}
+                >
+                  <span style={{
+                    color: 'var(--gold)',
+                    fontWeight: 700,
+                    fontSize: `${chordFontSize}px`,
+                    lineHeight: 1.3,
+                    minHeight: `${Math.round(chordFontSize * 1.3)}px`,
+                    display: 'block',
+                  }}>
+                    {chord}
+                  </span>
+                  <span style={{ color: 'var(--text)', lineHeight: 1.6, display: 'block' }}>
+                    {word}
+                  </span>
+                </span>
+              ))}
             </div>
           )
         })}
