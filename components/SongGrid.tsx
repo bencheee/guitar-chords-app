@@ -351,11 +351,6 @@ export default function SongGrid({ songs }: Props) {
                     {song.year}
                   </span>
                 )}
-                {song.key && (
-                  <span style={{ background: 'var(--surface-3)', color: 'var(--gold)', padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontFamily: 'var(--font-geist-mono)', fontWeight: 600 }}>
-                    {song.key}
-                  </span>
-                )}
                 {song.capo > 0 && (
                   <span style={{ background: 'var(--surface-3)', color: 'var(--dim)', padding: '2px 9px', borderRadius: '20px', fontSize: '11px' }}>
                     Capo {song.capo}
