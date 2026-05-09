@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Song } from '@/lib/types'
-import { parseContent, transposeContent, transposeKey } from '@/lib/chord-utils'
+import { parseContent, transposeContent } from '@/lib/chord-utils'
 
 const FONT_OPTIONS = [
   { label: 'S',  px: 13 },
@@ -66,8 +66,7 @@ export default function SongPage({ song }: { song: Song }) {
 
   const fontSize      = FONT_OPTIONS[fontIdx].px
   const chordFontSize = Math.round(fontSize * 0.82)
-  const transposedKey = song.key ? transposeKey(song.key, semitones) : ''
-  const lines         = parseContent(transposeContent(song.content, semitones))
+  const lines = parseContent(transposeContent(song.content, semitones))
 
   // ── Wake lock ──────────────────────────────────────────────
   const acquireNativeWakeLock = useCallback(async () => {
@@ -229,11 +228,8 @@ export default function SongPage({ song }: { song: Song }) {
         <div className="setup-controls">
           {/* Transpose */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Key</span>
+            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Transpose</span>
             <button onClick={() => changeTranspose(-1)} style={iconBtn} aria-label="Transpose down">−</button>
-            <span style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--gold)', fontWeight: 700, fontSize: '16px', minWidth: '36px', textAlign: 'center' }}>
-              {transposedKey || song.key || '—'}
-            </span>
             <button onClick={() => changeTranspose(+1)} style={iconBtn} aria-label="Transpose up">+</button>
             {semitones !== 0 && (
               <>

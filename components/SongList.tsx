@@ -96,7 +96,7 @@ export default function SongList({ initialSongs }: Props) {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--line)' }}>
-              {['Title', 'Artist', 'Album', 'Year', 'Key', 'Capo', ''].map(h => (
+              {['Title', 'Artist', 'Album', 'Year', 'Capo', ''].map(h => (
                 <th
                   key={h}
                   style={{
@@ -133,23 +133,6 @@ export default function SongList({ initialSongs }: Props) {
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>{song.artist}</td>
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>{song.album || '—'}</td>
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>{song.year ?? '—'}</td>
-                <td style={{ padding: '14px 20px' }}>
-                  {song.key ? (
-                    <span
-                      style={{
-                        background: 'var(--surface-3)',
-                        color: 'var(--gold)',
-                        padding: '2px 10px',
-                        borderRadius: '20px',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        fontFamily: 'var(--font-geist-mono)',
-                      }}
-                    >
-                      {song.key}
-                    </span>
-                  ) : '—'}
-                </td>
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>
                   {song.capo > 0 ? `Capo ${song.capo}` : '—'}
                 </td>
