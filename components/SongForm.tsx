@@ -29,16 +29,17 @@ const fieldStyle: React.CSSProperties = {
 
 export default function SongForm({ song }: Props) {
   const router = useRouter()
-  const [title, setTitle]     = useState(song?.title ?? '')
-  const [artist, setArtist]   = useState(song?.artist ?? '')
-  const [album, setAlbum]     = useState(song?.album ?? '')
-  const [year, setYear]       = useState(song?.year?.toString() ?? '')
-  const [key]                 = useState(song?.key ?? '')
-  const [capo, setCapo]       = useState(song?.capo ?? 0)
+  const [title, setTitle]       = useState(song?.title ?? '')
+  const [artist, setArtist]     = useState(song?.artist ?? '')
+  const [album, setAlbum]       = useState(song?.album ?? '')
+  const [year, setYear]         = useState(song?.year?.toString() ?? '')
+  const [key]                   = useState(song?.key ?? '')
+  const [capo, setCapo]         = useState(song?.capo ?? 0)
   const [content, setContent]   = useState(song?.content ?? '')
   const [language, setLanguage] = useState<Language>(song?.language ?? 'en')
   const [error, setError]       = useState('')
   const [saving, setSaving]     = useState(false)
+  const [preview, setPreview]   = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -81,11 +82,9 @@ export default function SongForm({ song }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'start' }}>
-
-        {/* Left column: form fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <>
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '680px' }}>
 
           {/* Language toggle */}
           <div style={fieldStyle}>
@@ -191,7 +190,26 @@ export default function SongForm({ song }: Props) {
 
           {/* Content textarea */}
           <div style={fieldStyle}>
-            <label style={labelStyle}>Chord Sheet</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Chord Sheet</label>
+              <button
+                type="button"
+                onClick={() => setPreview(true)}
+                style={{
+                  background: 'var(--surface-2)',
+                  color: 'var(--dim)',
+                  border: '1px solid var(--line)',
+                  borderRadius: '6px',
+                  padding: '5px 14px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.12s',
+                }}
+              >
+                Preview
+              </button>
+            </div>
             <textarea
               value={content}
               onChange={e => setContent(e.target.value)}
@@ -246,41 +264,88 @@ export default function SongForm({ song }: Props) {
             </button>
           </div>
         </div>
+      </form>
 
-        {/* Right column: live preview */}
-        <div style={{ position: 'sticky', top: '24px' }}>
-          <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={labelStyle}>Live Preview</span>
-            {capo > 0 && (
-              <span
-                style={{
-                  background: 'var(--surface-3)',
-                  color: 'var(--dim)',
-                  padding: '2px 10px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  marginBottom: '6px',
-                }}
-              >
-                Capo {capo}
-              </span>
-            )}
-          </div>
+      {/* Preview modal */}
+      {preview && (
+        <div
+          onClick={() => setPreview(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.7)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
           <div
+            onClick={e => e.stopPropagation()}
             style={{
-              background: 'var(--surface)',
+              background: 'var(--bg)',
               border: '1px solid var(--line)',
-              borderRadius: '10px',
-              padding: '24px',
-              minHeight: '400px',
-              maxHeight: '80vh',
-              overflowY: 'auto',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '720px',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
             }}
           >
-            <ChordPreview content={content} fontSize={14} />
+            {/* Modal header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--line)',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={labelStyle}>Live Preview</span>
+                {capo > 0 && (
+                  <span style={{
+                    background: 'var(--surface-3)',
+                    color: 'var(--dim)',
+                    padding: '2px 10px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                  }}>
+                    Capo {capo}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setPreview(false)}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--muted)',
+                  border: '1px solid var(--line)',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div style={{
+              overflowY: 'auto',
+              padding: '24px',
+              fontFamily: 'var(--font-geist-mono)',
+            }}>
+              <ChordPreview content={content} fontSize={14} />
+            </div>
           </div>
         </div>
-      </div>
-    </form>
+      )}
+    </>
   )
 }
