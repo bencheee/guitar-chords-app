@@ -3,7 +3,7 @@ export interface Song {
   title: string
   artist: string
   album: string
-  year: number
+  year: number | null
   capo: number
   key: string
   content: string
@@ -12,3 +12,5 @@ export interface Song {
 }
 
 export type SongInput = Omit<Song, 'id' | 'created_at' | 'updated_at'>
+
+export type SongSummary = Pick<Song, 'id' | 'title' | 'artist' | 'album' | 'year' | 'key' | 'capo'>
