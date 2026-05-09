@@ -14,7 +14,7 @@ A full-stack web app for storing and displaying guitar chord sheets. Designed pr
 
 | Layer      | Choice                        |
 |------------|-------------------------------|
-| Framework  | Next.js 14 (App Router)       |
+| Framework  | Next.js 16 (App Router)       |
 | Database   | Supabase (PostgreSQL)         |
 | Styling    | Tailwind CSS                  |
 | Deployment | Vercel                        |
@@ -38,7 +38,7 @@ A full-stack web app for storing and displaying guitar chord sheets. Designed pr
 
 ```
 Song {
-  id          uuid (PK)
+  id          uuid (PK, default gen_random_uuid())
   title       string
   artist      string
   album       string
@@ -46,8 +46,8 @@ Song {
   capo        integer (0–9)
   key         string  (original key, e.g. "Am")
   content     text    (ChordPro format)
-  created_at  timestamp
-  updated_at  timestamp
+  created_at  timestamp (default now())
+  updated_at  timestamp (default now())
 }
 ```
 
@@ -60,13 +60,16 @@ Song {
   /admin              → song management (list, add, edit, delete)
   /songs              → public library (browse, search, sort)
   /songs/[id]         → individual song page
-/api
+/app/api
   /songs              → CRUD API routes
 /components
   /chord-renderer     → ChordPro parser + renderer
   /transpose          → chord transposition engine
   /autoscroll         → scroll controller
   /tv-nav             → keyboard/remote navigation utilities
+/lib
+  /supabase.ts        → Supabase client
+  /types.ts           → shared TypeScript types
 ```
 
 ---
@@ -74,32 +77,32 @@ Song {
 ## Features
 
 ### Admin
-- [x] Planned — Song list with edit/delete
-- [x] Planned — Add/Edit form (title, artist, album, year, capo 0–9, key, content)
-- [x] Planned — Monospace textarea with live preview
+- [ ] Song list with edit/delete
+- [ ] Add/Edit form (title, artist, album, year, capo 0–9, key, content)
+- [ ] Monospace textarea with live preview
 
 ### Frontend — Library
-- [x] Planned — Song grid/list
-- [x] Planned — Sort by artist A–Z, title A–Z, year
-- [x] Planned — Real-time search (title + artist)
-- [x] Planned — Full remote/keyboard navigation
+- [ ] Song grid/list
+- [ ] Sort by artist A–Z, title A–Z, year
+- [ ] Real-time search (title + artist)
+- [ ] Full remote/keyboard navigation
 
 ### Frontend — Song Page
-- [x] Planned — ChordPro renderer (chords above lyrics)
-- [x] Planned — Transpose control (–/+)
-- [x] Planned — Font size control (S / M / L / XL)
-- [x] Planned — CAPO badge
-- [x] Planned — Auto-scroll with speed slider
-- [x] Planned — Scroll pause/resume (OK/Enter key)
-- [x] Planned — Wake lock (API + video fallback)
+- [ ] ChordPro renderer (chords above lyrics)
+- [ ] Transpose control (–/+)
+- [ ] Font size control (S / M / L / XL)
+- [ ] CAPO badge
+- [ ] Auto-scroll with speed slider
+- [ ] Scroll pause/resume (OK/Enter key)
+- [ ] Wake lock (API + video fallback)
 
 ---
 
 ## Development Phases
 
-| Phase | Description                        | Status     |
-|-------|------------------------------------|------------|
-| 1     | Project setup, Supabase, Vercel    | Not started |
+| Phase | Description                        | Status      |
+|-------|------------------------------------|-------------|
+| 1     | Project setup, Supabase, Vercel    | In progress |
 | 2     | API layer (CRUD routes)            | Not started |
 | 3     | Admin UI                           | Not started |
 | 4     | ChordPro engine + transpose        | Not started |
@@ -137,3 +140,4 @@ Set in `.env.local` locally and in Vercel dashboard for production.
 - Chord rendering must use a monospace font — chord horizontal position maps directly to character position.
 - Font size control is important: TV viewing distance (~3m) means defaults may need to be larger than typical web sizes.
 - Transpose shifts all `[Chord]` tokens in the content string — do not mutate DB, do it client-side.
+- Next.js version is 16.2.6 — read node_modules/next/dist/docs/ if APIs behave unexpectedly.
