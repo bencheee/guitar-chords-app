@@ -91,7 +91,7 @@ See [CLAUDE.md](./CLAUDE.md) for the full development plan and phase tracking.
 | 2     | API layer (CRUD routes)            | Complete ✓  |
 | 3     | Admin UI                           | Complete ✓  |
 | 4     | ChordPro engine + transpose        | Complete ✓  |
-| 5     | Frontend library page              | Not started |
+| 5     | Frontend library page              | Complete ✓  |
 | 6     | Song page (scroll, wake lock, etc) | Not started |
 | 7     | Design & responsiveness            | Not started |
 | 8     | Deployment & TV testing            | Not started |
