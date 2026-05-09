@@ -57,9 +57,10 @@ export default function SongPage({ song }: { song: Song }) {
   const [playing,   setPlaying]   = useState(false)
   const [speed,     setSpeed]     = useState(1)
 
-  const rafRef      = useRef<number | null>(null)
-  const accumRef    = useRef(0)
-  const wakeLockRef = useRef<{ release: () => void } | null>(null)
+  const rafRef       = useRef<number | null>(null)
+  const accumRef     = useRef(0)
+  const scrollPosRef = useRef(0)
+  const wakeLockRef  = useRef<{ release: () => void } | null>(null)
   const videoRef    = useRef<HTMLVideoElement | null>(null)
   const playBtnRef  = useRef<HTMLButtonElement | null>(null)
 
@@ -69,41 +70,70 @@ export default function SongPage({ song }: { song: Song }) {
   const lines         = parseContent(transposeContent(song.content, semitones))
 
   // ── Wake lock ──────────────────────────────────────────────
-  const acquireWakeLock = useCallback(async () => {
-    if ('wakeLock' in navigator) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        wakeLockRef.current = await (navigator as any).wakeLock.request('screen')
-        return
-      } catch {}
-    }
+  const acquireNativeWakeLock = useCallback(async () => {
+    if (!('wakeLock' in navigator)) return false
     try {
-      const canvas = document.createElement('canvas')
-      canvas.width = canvas.height = 1
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const stream = (canvas as any).captureStream()
-      const video  = document.createElement('video')
-      video.srcObject  = stream
-      video.muted      = true
-      video.loop       = true
-      video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0'
-      document.body.appendChild(video)
-      videoRef.current = video
-      await video.play()
-    } catch {}
+      wakeLockRef.current = await (navigator as any).wakeLock.request('screen')
+      return true
+    } catch { return false }
   }, [])
 
   useEffect(() => {
-    acquireWakeLock()
-    const onVisible = () => { if (document.visibilityState === 'visible') acquireWakeLock() }
+    let intervalId: ReturnType<typeof setInterval>
+    let animFrameId: number
+
+    async function setup() {
+      const gotNative = await acquireNativeWakeLock()
+
+      // Canvas-stream video fallback — keeps TV display active even without native wake lock.
+      // We animate the canvas so the stream always has new frames (static streams can be optimised away).
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = canvas.height = 2
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stream = (canvas as any).captureStream(1)
+        const video  = document.createElement('video')
+        video.srcObject  = stream
+        video.muted      = true
+        video.loop       = true
+        video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0'
+        document.body.appendChild(video)
+        videoRef.current = video
+        await video.play()
+
+        const ctx = canvas.getContext('2d')
+        let tick = 0
+        const animate = () => {
+          if (ctx) { ctx.fillStyle = tick++ % 2 === 0 ? '#000' : '#010101'; ctx.fillRect(0, 0, 2, 2) }
+          animFrameId = requestAnimationFrame(animate)
+        }
+        animate()
+      } catch {}
+
+      // Periodically re-acquire the native wake lock in case it was released
+      if (gotNative) {
+        intervalId = setInterval(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const lock = wakeLockRef.current as any
+          if (!lock || lock.released) await acquireNativeWakeLock()
+        }, 25_000)
+      }
+    }
+
+    setup()
+    const onVisible = () => { if (document.visibilityState === 'visible') acquireNativeWakeLock() }
     document.addEventListener('visibilitychange', onVisible)
+
     return () => {
+      clearInterval(intervalId)
+      cancelAnimationFrame(animFrameId)
       wakeLockRef.current?.release()
       wakeLockRef.current = null
       if (videoRef.current) { videoRef.current.pause(); videoRef.current.remove(); videoRef.current = null }
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [acquireWakeLock])
+  }, [acquireNativeWakeLock])
 
   // Focus play button on mount so TV remote OK press starts scrolling immediately
   useEffect(() => { playBtnRef.current?.focus() }, [])
@@ -114,13 +144,19 @@ export default function SongPage({ song }: { song: Song }) {
     if (!playing) return
 
     const pxPerFrame = speed * 0.1
-    accumRef.current = 0
+    accumRef.current  = 0
+    scrollPosRef.current = window.scrollY
 
     const tick = () => {
       accumRef.current += pxPerFrame
       const px = Math.floor(accumRef.current)
-      if (px > 0) { window.scrollBy(0, px); accumRef.current -= px }
-      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10) {
+      if (px > 0) {
+        scrollPosRef.current += px
+        window.scrollTo(0, scrollPosRef.current)
+        accumRef.current -= px
+      }
+      const scrollHeight = document.documentElement.scrollHeight
+      if (scrollPosRef.current + window.innerHeight >= scrollHeight - 10) {
         setPlaying(false)
         return
       }
@@ -313,20 +349,23 @@ export default function SongPage({ song }: { song: Song }) {
 
         <div style={{ width: '1px', height: '28px', background: 'var(--line)', flexShrink: 0 }} />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Speed</span>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={speed}
-            onChange={e => setSpeed(Number(e.target.value))}
-            style={{ width: '90px', accentColor: 'var(--gold)' }}
-            aria-label="Scroll speed"
-          />
-          <span style={{ fontSize: '13px', color: 'var(--gold)', minWidth: '16px', textAlign: 'center', fontFamily: 'var(--font-geist-mono)', fontWeight: 700 }}>
+          <button
+            onClick={() => setSpeed(s => Math.max(1, s - 1))}
+            disabled={speed <= 1}
+            style={{ ...iconBtn, padding: '8px 12px', opacity: speed <= 1 ? 0.35 : 1 }}
+            aria-label="Slower"
+          >−</button>
+          <span style={{ fontSize: '14px', color: 'var(--gold)', minWidth: '20px', textAlign: 'center', fontFamily: 'var(--font-geist-mono)', fontWeight: 700 }}>
             {speed}
           </span>
+          <button
+            onClick={() => setSpeed(s => Math.min(10, s + 1))}
+            disabled={speed >= 10}
+            style={{ ...iconBtn, padding: '8px 12px', opacity: speed >= 10 ? 0.35 : 1 }}
+            aria-label="Faster"
+          >+</button>
         </div>
 
         <div style={{ width: '1px', height: '28px', background: 'var(--line)', flexShrink: 0 }} />

@@ -92,8 +92,8 @@ export default function SongList({ initialSongs }: Props) {
   return (
     <>
       {langToggle}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--line)' }}>
               {['Title', 'Artist', 'Album', 'Year', 'Key', 'Capo', ''].map(h => (
@@ -126,7 +126,9 @@ export default function SongList({ initialSongs }: Props) {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <td style={{ padding: '14px 20px', fontWeight: 500, color: 'var(--text)' }}>
-                  {song.title}
+                  <Link href={`/admin/edit/${song.id}`} style={{ color: 'var(--text)', textDecoration: 'none' }}>
+                    {song.title}
+                  </Link>
                 </td>
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>{song.artist}</td>
                 <td style={{ padding: '14px 20px', color: 'var(--dim)' }}>{song.album || '—'}</td>

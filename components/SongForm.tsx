@@ -33,7 +33,7 @@ export default function SongForm({ song }: Props) {
   const [artist, setArtist]   = useState(song?.artist ?? '')
   const [album, setAlbum]     = useState(song?.album ?? '')
   const [year, setYear]       = useState(song?.year?.toString() ?? '')
-  const [key, setKey]         = useState(song?.key ?? '')
+  const [key]                 = useState(song?.key ?? '')
   const [capo, setCapo]       = useState(song?.capo ?? 0)
   const [content, setContent]   = useState(song?.content ?? '')
   const [language, setLanguage] = useState<Language>(song?.language ?? 'en')
@@ -160,26 +160,16 @@ export default function SongForm({ song }: Props) {
             </div>
           </div>
 
-          {/* Row 3: Key + Capo */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Original Key</label>
-              <input
-                value={key}
-                onChange={e => setKey(e.target.value)}
-                placeholder="e.g. Am, G, C#"
-              />
-            </div>
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Capo</label>
-              <select value={capo} onChange={e => setCapo(parseInt(e.target.value))}>
-                {CAPO_OPTIONS.map(n => (
-                  <option key={n} value={n}>
-                    {n === 0 ? 'No Capo' : `Capo ${n}`}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Row 3: Capo */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Capo</label>
+            <select value={capo} onChange={e => setCapo(parseInt(e.target.value))} style={{ maxWidth: '200px' }}>
+              {CAPO_OPTIONS.map(n => (
+                <option key={n} value={n}>
+                  {n === 0 ? 'No Capo' : `Capo ${n}`}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Chord format hint */}
@@ -261,22 +251,6 @@ export default function SongForm({ song }: Props) {
         <div style={{ position: 'sticky', top: '24px' }}>
           <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={labelStyle}>Live Preview</span>
-            {key && (
-              <span
-                style={{
-                  background: 'var(--surface-3)',
-                  color: 'var(--gold)',
-                  padding: '2px 10px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-geist-mono)',
-                  marginBottom: '6px',
-                }}
-              >
-                {key}
-              </span>
-            )}
             {capo > 0 && (
               <span
                 style={{

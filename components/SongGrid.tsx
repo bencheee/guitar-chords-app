@@ -34,14 +34,16 @@ export default function SongGrid({ songs }: Props) {
   const [lang,           setLang]           = useState<Language>('en')
   const [search,         setSearch]         = useState('')
   const [sort,           setSort]           = useState<SortField>('title')
-  const [compact,        setCompact]        = useState(false)
+  const [compact,        setCompact]        = useState(true)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null)
 
-  // Persist language preference
+  // Persist preferences
   useEffect(() => {
-    const saved = localStorage.getItem('song-lang')
-    if (saved === 'en' || saved === 'hr') setLang(saved)
+    const savedLang = localStorage.getItem('song-lang')
+    if (savedLang === 'en' || savedLang === 'hr') setLang(savedLang)
+    const savedCompact = localStorage.getItem('song-compact')
+    if (savedCompact !== null) setCompact(savedCompact === 'true')
   }, [])
   useEffect(() => {
     localStorage.setItem('song-lang', lang)
@@ -194,7 +196,7 @@ export default function SongGrid({ songs }: Props) {
             </button>
           ))}
           <button
-            onClick={() => setCompact(c => !c)}
+            onClick={() => setCompact(c => { const next = !c; localStorage.setItem('song-compact', String(next)); return next })}
             title={compact ? 'Switch to grid view' : 'Switch to compact view'}
             style={{ ...sortBtn(compact), padding: '11px 15px', fontSize: '17px', lineHeight: 1 }}
           >
