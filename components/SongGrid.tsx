@@ -96,7 +96,7 @@ export default function SongGrid({ songs }: Props) {
       return av.localeCompare(bv)
     })
     return result
-  }, [songs, search, sort, selectedLetter, selectedArtist])
+  }, [songs, lang, search, sort, selectedLetter, selectedArtist])
 
   function selectLetter(letter: string) {
     if (selectedLetter === letter) {
