@@ -55,12 +55,13 @@ export default function SongPage({ song }: { song: Song }) {
   const [semitones, setSemitones] = useState(0)
   const [fontIdx,   setFontIdx]   = useState(1)
   const [playing,   setPlaying]   = useState(false)
-  const [speed,     setSpeed]     = useState(3)
+  const [speed,     setSpeed]     = useState(1)
 
   const rafRef      = useRef<number | null>(null)
   const accumRef    = useRef(0)
   const wakeLockRef = useRef<{ release: () => void } | null>(null)
   const videoRef    = useRef<HTMLVideoElement | null>(null)
+  const playBtnRef  = useRef<HTMLButtonElement | null>(null)
 
   const fontSize      = FONT_OPTIONS[fontIdx].px
   const chordFontSize = Math.round(fontSize * 0.82)
@@ -103,6 +104,9 @@ export default function SongPage({ song }: { song: Song }) {
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [acquireWakeLock])
+
+  // Focus play button on mount so TV remote OK press starts scrolling immediately
+  useEffect(() => { playBtnRef.current?.focus() }, [])
 
   // ── Auto scroll ────────────────────────────────────────────
   useEffect(() => {
@@ -289,6 +293,7 @@ export default function SongPage({ song }: { song: Song }) {
       {/* Floating pill */}
       <div className={`floating-pill${playing ? ' pill-playing' : ''}`}>
         <button
+          ref={playBtnRef}
           onClick={() => setPlaying(p => !p)}
           style={{
             background: playing ? 'var(--danger)' : 'var(--gold)',
