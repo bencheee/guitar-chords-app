@@ -1,3 +1,4 @@
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  return Response.json({ message: `Song ${params.id} — coming soon` })
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return Response.json({ message: `Song ${id} — coming soon` })
 }
