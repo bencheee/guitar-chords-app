@@ -8,7 +8,7 @@ export default async function AdminPage() {
   const db = supabaseAdmin()
   const { data, error } = await db
     .from('songs')
-    .select('id, title, artist, album, year, key, capo')
+    .select('id, title, artist, album, year, key, capo, language')
     .order('title', { ascending: true })
 
   const songs: SongSummary[] = error ? [] : (data ?? [])

@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const db = supabaseAdmin()
   let query = db
     .from('songs')
-    .select('id, title, artist, album, year, capo, key, created_at, updated_at')
+    .select('id, title, artist, album, year, capo, key, language, created_at, updated_at')
     .order(sortColumn, { ascending: order })
 
   if (search) {
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const body: SongInput = await req.json()
 
-  const { title, artist, album, year, capo, key, content } = body
+  const { title, artist, album, year, capo, key, language, content } = body
 
   if (!title?.trim() || !artist?.trim()) {
     return Response.json({ error: 'title and artist are required' }, { status: 400 })
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const db = supabaseAdmin()
   const { data, error } = await db
     .from('songs')
-    .insert({ title: title.trim(), artist: artist.trim(), album, year, capo, key, content })
+    .insert({ title: title.trim(), artist: artist.trim(), album, year, capo, key, language: language ?? 'en', content })
     .select()
     .single()
 

@@ -14,7 +14,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params
   const body: Partial<SongInput> = await req.json()
 
-  const allowed: (keyof SongInput)[] = ['title', 'artist', 'album', 'year', 'capo', 'key', 'content']
+  const allowed: (keyof SongInput)[] = ['title', 'artist', 'album', 'year', 'capo', 'key', 'language', 'content']
   const updates: Partial<SongInput> = {}
   for (const field of allowed) {
     if (field in body) updates[field] = body[field] as never

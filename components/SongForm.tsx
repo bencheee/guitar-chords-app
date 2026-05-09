@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Song, SongInput } from '@/lib/types'
+import { Song, SongInput, Language } from '@/lib/types'
 import ChordPreview from './ChordPreview'
 
 interface Props {
@@ -35,9 +35,10 @@ export default function SongForm({ song }: Props) {
   const [year, setYear]       = useState(song?.year?.toString() ?? '')
   const [key, setKey]         = useState(song?.key ?? '')
   const [capo, setCapo]       = useState(song?.capo ?? 0)
-  const [content, setContent] = useState(song?.content ?? '')
-  const [error, setError]     = useState('')
-  const [saving, setSaving]   = useState(false)
+  const [content, setContent]   = useState(song?.content ?? '')
+  const [language, setLanguage] = useState<Language>(song?.language ?? 'en')
+  const [error, setError]       = useState('')
+  const [saving, setSaving]     = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,6 +56,7 @@ export default function SongForm({ song }: Props) {
       year: year ? parseInt(year) : null,
       key: key.trim(),
       capo,
+      language,
       content,
     }
 
@@ -84,6 +86,34 @@ export default function SongForm({ song }: Props) {
 
         {/* Left column: form fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+          {/* Language toggle */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Language</label>
+            <div style={{ display: 'flex', gap: '0' }}>
+              {(['en', 'hr'] as Language[]).map(lang => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setLanguage(lang)}
+                  style={{
+                    background: language === lang ? 'var(--gold)' : 'var(--surface-2)',
+                    color:      language === lang ? 'var(--bg)'   : 'var(--dim)',
+                    border: '1px solid var(--line)',
+                    borderRadius: lang === 'en' ? '6px 0 0 6px' : '0 6px 6px 0',
+                    padding: '10px 28px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    letterSpacing: '0.06em',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Row 1: Title + Artist */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

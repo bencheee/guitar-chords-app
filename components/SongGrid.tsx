@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
-import { SongSummary } from '@/lib/types'
+import { useRef, useState, useMemo, useEffect } from 'react'
+import { SongSummary, Language } from '@/lib/types'
 
 type SortField = 'title' | 'artist' | 'year'
 
@@ -31,34 +31,49 @@ function sortBtn(active: boolean): React.CSSProperties {
 }
 
 export default function SongGrid({ songs }: Props) {
+  const [lang,           setLang]           = useState<Language>('en')
   const [search,         setSearch]         = useState('')
   const [sort,           setSort]           = useState<SortField>('title')
   const [compact,        setCompact]        = useState(false)
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null)
 
+  // Persist language preference
+  useEffect(() => {
+    const saved = localStorage.getItem('song-lang')
+    if (saved === 'en' || saved === 'hr') setLang(saved)
+  }, [])
+  useEffect(() => {
+    localStorage.setItem('song-lang', lang)
+    setSelectedLetter(null)
+    setSelectedArtist(null)
+    setSearch('')
+  }, [lang])
+
   const searchRef = useRef<HTMLInputElement>(null)
   const cardRefs  = useRef<(HTMLAnchorElement | null)[]>([])
 
-  // Letters that have at least one artist starting with them
+  // Letters that have at least one artist starting with them (for current language)
   const availableLetters = useMemo(() => {
-    const set = new Set(songs.map(s => s.artist[0]?.toUpperCase()).filter(Boolean))
+    const set = new Set(
+      songs.filter(s => s.language === lang).map(s => s.artist[0]?.toUpperCase()).filter(Boolean)
+    )
     return [...set].sort()
-  }, [songs])
+  }, [songs, lang])
 
-  // Unique artists for the selected letter
+  // Unique artists for the selected letter (for current language)
   const artistsForLetter = useMemo(() => {
     if (!selectedLetter) return []
     const set = new Set(
       songs
-        .filter(s => s.artist[0]?.toUpperCase() === selectedLetter)
+        .filter(s => s.language === lang && s.artist[0]?.toUpperCase() === selectedLetter)
         .map(s => s.artist)
     )
     return [...set].sort()
-  }, [songs, selectedLetter])
+  }, [songs, lang, selectedLetter])
 
   const filtered = useMemo(() => {
-    let result = [...songs]
+    let result = songs.filter(s => s.language === lang)
 
     if (selectedArtist) {
       result = result.filter(s => s.artist === selectedArtist)
@@ -136,6 +151,30 @@ export default function SongGrid({ songs }: Props) {
 
   return (
     <div className="fade-up">
+
+      {/* ── EN / HR language switcher ── */}
+      <div style={{ display: 'flex', gap: '0', marginBottom: '28px' }}>
+        {(['en', 'hr'] as Language[]).map(l => (
+          <button
+            key={l}
+            onClick={() => setLang(l)}
+            style={{
+              background: lang === l ? 'var(--gold)' : 'var(--surface)',
+              color:      lang === l ? 'var(--bg)'   : 'var(--dim)',
+              border: '1px solid var(--line)',
+              borderRadius: l === 'en' ? '8px 0 0 8px' : '0 8px 8px 0',
+              padding: '11px 32px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              letterSpacing: '0.08em',
+              transition: 'all 0.15s',
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
 
       {/* ── Search + Sort + Compact toggle ── */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center', flexWrap: 'wrap' }}>

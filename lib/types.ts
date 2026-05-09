@@ -1,3 +1,5 @@
+export type Language = 'en' | 'hr'
+
 export interface Song {
   id: string
   title: string
@@ -6,6 +8,7 @@ export interface Song {
   year: number | null
   capo: number
   key: string
+  language: Language
   content: string
   created_at: string
   updated_at: string
@@ -13,4 +16,4 @@ export interface Song {
 
 export type SongInput = Omit<Song, 'id' | 'created_at' | 'updated_at'>
 
-export type SongSummary = Pick<Song, 'id' | 'title' | 'artist' | 'album' | 'year' | 'key' | 'capo'>
+export type SongSummary = Pick<Song, 'id' | 'title' | 'artist' | 'album' | 'year' | 'key' | 'capo' | 'language'>
