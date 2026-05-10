@@ -13,10 +13,15 @@ export default function SongList({ initialSongs }: Props) {
   const router = useRouter()
   const [songs, setSongs]     = useState(initialSongs)
   const [lang, setLang]       = useState<Language>('en')
+  const [search, setSearch]   = useState('')
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleting, setDeleting]   = useState(false)
 
-  const visible = songs.filter(s => s.language === lang)
+  const q = search.toLowerCase().trim()
+  const visible = songs.filter(s =>
+    s.language === lang &&
+    (!q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q))
+  )
 
   async function handleDelete(id: string) {
     setDeleting(true)
@@ -30,27 +35,36 @@ export default function SongList({ initialSongs }: Props) {
   }
 
   const langToggle = (
-    <div style={{ display: 'flex', gap: '0', marginBottom: '20px' }}>
-      {(['en', 'hr'] as Language[]).map(l => (
-        <button
-          key={l}
-          onClick={() => { setLang(l); setConfirmId(null) }}
-          style={{
-            background: lang === l ? 'var(--gold)' : 'var(--surface)',
-            color:      lang === l ? 'var(--bg)'   : 'var(--dim)',
-            border: '1px solid var(--line)',
-            borderRadius: l === 'en' ? '8px 0 0 8px' : '0 8px 8px 0',
-            padding: '10px 28px',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            letterSpacing: '0.08em',
-            transition: 'all 0.15s',
-          }}
-        >
-          {l.toUpperCase()}
-        </button>
-      ))}
+    <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0' }}>
+        {(['en', 'hr'] as Language[]).map(l => (
+          <button
+            key={l}
+            onClick={() => { setLang(l); setSearch(''); setConfirmId(null) }}
+            style={{
+              background: lang === l ? 'var(--gold)' : 'var(--surface)',
+              color:      lang === l ? 'var(--bg)'   : 'var(--dim)',
+              border: '1px solid var(--line)',
+              borderRadius: l === 'en' ? '8px 0 0 8px' : '0 8px 8px 0',
+              padding: '10px 28px',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              letterSpacing: '0.08em',
+              transition: 'all 0.15s',
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
+      <input
+        type="search"
+        value={search}
+        onChange={e => { setSearch(e.target.value); setConfirmId(null) }}
+        placeholder="Search songs or artists…"
+        style={{ flex: 1, minWidth: '180px', fontSize: '15px', padding: '10px 16px' }}
+      />
     </div>
   )
 
