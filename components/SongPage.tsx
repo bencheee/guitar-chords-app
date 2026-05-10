@@ -189,11 +189,11 @@ export default function SongPage({ song }: { song: Song }) {
 
   return (
     <>
-      {/* Hero — sticky so title + controls stay visible while scrolling */}
+      {/* Sticky title + details */}
       <div className="fade-up song-hero">
         <Link
           href="/songs"
-          style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '20px' }}
+          style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}
         >
           ← Back to Library
         </Link>
@@ -203,7 +203,7 @@ export default function SongPage({ song }: { song: Song }) {
             fontSize: 'clamp(22px, 4vw, 52px)',
             fontWeight: 800,
             lineHeight: 1.1,
-            margin: '0 0 8px',
+            margin: '0 0 6px',
             letterSpacing: '-0.03em',
             color: 'var(--text)',
           }}
@@ -211,55 +211,55 @@ export default function SongPage({ song }: { song: Song }) {
           {song.title}
         </h1>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--dim)', fontSize: '15px' }}>
             {song.artist}
             {song.album && <> &bull; {song.album}</>}
             {song.year  && <> &bull; {song.year}</>}
           </span>
         </div>
+      </div>
 
-        {/* Setup controls */}
-        <div className="setup-controls">
-          {/* Transpose */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Transpose</span>
-            <button onClick={() => changeTranspose(-1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose down">−</button>
-            <button onClick={() => changeTranspose(+1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose up">+</button>
-            {semitones !== 0 && (
-              <>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'var(--font-geist-mono)' }}>
-                  {semitones > 0 ? '+' : ''}{semitones}
-                </span>
-                <button onClick={() => setSemitones(0)} onMouseEnter={e => e.currentTarget.focus()} style={{ ...iconBtn, fontSize: '11px', padding: '6px 10px' }}>
-                  Reset
-                </button>
-              </>
-            )}
-          </div>
-
-          <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
-
-          {/* Font size */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Size</span>
-            {FONT_OPTIONS.map((f, i) => (
-              <button key={f.label} onClick={() => setFontIdx(i)} onMouseEnter={e => e.currentTarget.focus()} style={ctrlBtn(fontIdx === i)}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Capo badge — shown at end of controls bar */}
-          {song.capo > 0 && (
+      {/* Setup controls — scrolls with content */}
+      <div className="fade-up setup-controls" style={{ marginBottom: '32px' }}>
+        {/* Transpose */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Transpose</span>
+          <button onClick={() => changeTranspose(-1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose down">−</button>
+          <button onClick={() => changeTranspose(+1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose up">+</button>
+          {semitones !== 0 && (
             <>
-              <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
-              <span style={{ background: 'var(--surface-3)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
-                CAPO {song.capo}
+              <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'var(--font-geist-mono)' }}>
+                {semitones > 0 ? '+' : ''}{semitones}
               </span>
+              <button onClick={() => setSemitones(0)} onMouseEnter={e => e.currentTarget.focus()} style={{ ...iconBtn, fontSize: '11px', padding: '6px 10px' }}>
+                Reset
+              </button>
             </>
           )}
         </div>
+
+        <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
+
+        {/* Font size */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Size</span>
+          {FONT_OPTIONS.map((f, i) => (
+            <button key={f.label} onClick={() => setFontIdx(i)} onMouseEnter={e => e.currentTarget.focus()} style={ctrlBtn(fontIdx === i)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Capo badge */}
+        {song.capo > 0 && (
+          <>
+            <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
+            <span style={{ background: 'var(--surface-3)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
+              CAPO {song.capo}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Song content */}
