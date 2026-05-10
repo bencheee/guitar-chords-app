@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Song, SongInput, Language } from '@/lib/types'
 import ChordPreview from './ChordPreview'
@@ -41,6 +41,23 @@ export default function SongForm({ song }: Props) {
   const [error, setError]       = useState('')
   const [saving, setSaving]     = useState(false)
   const [preview, setPreview]   = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  function insertBrackets() {
+    const el = textareaRef.current
+    if (!el) return
+    const { selectionStart: start, selectionEnd: end, value } = el
+    const selected = value.slice(start, end)
+    const inserted = `[${selected}]`
+    const next = value.slice(0, start) + inserted + value.slice(end)
+    setContent(next)
+    // restore focus and place cursor after the closing bracket (or inside if nothing was selected)
+    requestAnimationFrame(() => {
+      el.focus()
+      const pos = selected ? start + inserted.length : start + 1
+      el.setSelectionRange(pos, pos)
+    })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -206,7 +223,26 @@ export default function SongForm({ song }: Props) {
             {/* Content textarea */}
             <div style={fieldStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label style={{ ...labelStyle, marginBottom: 0 }}>Chord Sheet</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Chord Sheet</label>
+                  <button
+                    type="button"
+                    onClick={insertBrackets}
+                    title="Insert [ ] brackets (or wrap selection)"
+                    style={{
+                      background: 'var(--surface-3)',
+                      color: 'var(--gold)',
+                      border: '1px solid var(--line)',
+                      borderRadius: '5px',
+                      padding: '2px 8px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-geist-mono)',
+                      letterSpacing: '0.05em',
+                    }}
+                  >[ ]</button>
+                </div>
                 {/* Preview button — visible on mobile only (hidden on desktop via CSS) */}
                 <button
                   type="button"
@@ -229,6 +265,7 @@ export default function SongForm({ song }: Props) {
                 </button>
               </div>
               <textarea
+                ref={textareaRef}
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 placeholder={'[Am]Here comes the [G]sun\n[Am]Here comes the [G]sun, and I [F]say\n[C]It\'s alright'}
