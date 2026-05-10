@@ -200,13 +200,46 @@ input[type="range"]:focus-visible {
   background: var(--surface-2);
 }
 
+/* ── Song hero (sticky title + controls) ───────────────────── */
+
+.song-hero {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding-bottom: 20px;
+  padding-top: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ── Play button ────────────────────────────────────────────── */
+
+.play-btn {
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  border-radius: 40px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  min-width: 100px;
+}
+
+.play-btn:hover     { background: var(--gold-bright); }
+.play-btn:active    { background: #a07020; transform: scale(0.97); }
+.play-btn.playing   { background: #b08830; color: var(--bg); }
+.play-btn.playing:hover  { background: var(--gold); }
+.play-btn.playing:active { background: #8a6010; transform: scale(0.97); }
+
 /* ── Floating play pill ────────────────────────────────────── */
 
 .floating-pill {
   position: fixed;
   bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 40px;
   z-index: 50;
   background: var(--surface);
   border: 1px solid var(--line);

@@ -55,7 +55,7 @@ export default function SongPage({ song }: { song: Song }) {
   const [semitones, setSemitones] = useState(0)
   const [fontIdx,   setFontIdx]   = useState(1)
   const [playing,   setPlaying]   = useState(false)
-  const [speed,     setSpeed]     = useState(1)
+  const [speed,     setSpeed]     = useState(song.speed ?? 1)
 
   const rafRef       = useRef<number | null>(null)
   const accumRef     = useRef(0)
@@ -189,21 +189,21 @@ export default function SongPage({ song }: { song: Song }) {
 
   return (
     <>
-      {/* Hero */}
-      <div className="fade-up" style={{ paddingBottom: '32px' }}>
+      {/* Hero — sticky so title + controls stay visible while scrolling */}
+      <div className="fade-up song-hero">
         <Link
           href="/songs"
-          style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '28px' }}
+          style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '20px' }}
         >
           ← Back to Library
         </Link>
 
         <h1
           style={{
-            fontSize: 'clamp(28px, 5vw, 64px)',
+            fontSize: 'clamp(22px, 4vw, 52px)',
             fontWeight: 800,
             lineHeight: 1.1,
-            margin: '0 0 14px',
+            margin: '0 0 8px',
             letterSpacing: '-0.03em',
             color: 'var(--text)',
           }}
@@ -211,17 +211,12 @@ export default function SongPage({ song }: { song: Song }) {
           {song.title}
         </h1>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
-          <span style={{ color: 'var(--dim)', fontSize: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          <span style={{ color: 'var(--dim)', fontSize: '15px' }}>
             {song.artist}
             {song.album && <> &bull; {song.album}</>}
             {song.year  && <> &bull; {song.year}</>}
           </span>
-          {song.capo > 0 && (
-            <span style={{ background: 'var(--surface-3)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
-              CAPO {song.capo}
-            </span>
-          )}
         </div>
 
         {/* Setup controls */}
@@ -229,14 +224,14 @@ export default function SongPage({ song }: { song: Song }) {
           {/* Transpose */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Transpose</span>
-            <button onClick={() => changeTranspose(-1)} style={iconBtn} aria-label="Transpose down">−</button>
-            <button onClick={() => changeTranspose(+1)} style={iconBtn} aria-label="Transpose up">+</button>
+            <button onClick={() => changeTranspose(-1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose down">−</button>
+            <button onClick={() => changeTranspose(+1)} onMouseEnter={e => e.currentTarget.focus()} style={iconBtn} aria-label="Transpose up">+</button>
             {semitones !== 0 && (
               <>
                 <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'var(--font-geist-mono)' }}>
                   {semitones > 0 ? '+' : ''}{semitones}
                 </span>
-                <button onClick={() => setSemitones(0)} style={{ ...iconBtn, fontSize: '11px', padding: '6px 10px' }}>
+                <button onClick={() => setSemitones(0)} onMouseEnter={e => e.currentTarget.focus()} style={{ ...iconBtn, fontSize: '11px', padding: '6px 10px' }}>
                   Reset
                 </button>
               </>
@@ -249,11 +244,21 @@ export default function SongPage({ song }: { song: Song }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Size</span>
             {FONT_OPTIONS.map((f, i) => (
-              <button key={f.label} onClick={() => setFontIdx(i)} style={ctrlBtn(fontIdx === i)}>
+              <button key={f.label} onClick={() => setFontIdx(i)} onMouseEnter={e => e.currentTarget.focus()} style={ctrlBtn(fontIdx === i)}>
                 {f.label}
               </button>
             ))}
           </div>
+
+          {/* Capo badge — shown at end of controls bar */}
+          {song.capo > 0 && (
+            <>
+              <div style={{ width: '1px', height: '24px', background: 'var(--line)', flexShrink: 0 }} />
+              <span style={{ background: 'var(--surface-3)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
+                CAPO {song.capo}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -327,18 +332,8 @@ export default function SongPage({ song }: { song: Song }) {
         <button
           ref={playBtnRef}
           onClick={() => setPlaying(p => !p)}
-          style={{
-            background: playing ? 'var(--danger)' : 'var(--gold)',
-            color: playing ? '#fff' : 'var(--bg)',
-            border: 'none',
-            borderRadius: '40px',
-            padding: '10px 24px',
-            fontSize: '15px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-            minWidth: '100px',
-          }}
+          onMouseEnter={e => e.currentTarget.focus()}
+          className={`play-btn${playing ? ' playing' : ''}`}
         >
           {playing ? '⏸ Pause' : '▶ Play'}
         </button>
@@ -349,6 +344,7 @@ export default function SongPage({ song }: { song: Song }) {
           <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Speed</span>
           <button
             onClick={() => setSpeed(s => Math.max(1, s - 1))}
+            onMouseEnter={e => e.currentTarget.focus()}
             disabled={speed <= 1}
             style={{ ...iconBtn, padding: '8px 12px', opacity: speed <= 1 ? 0.35 : 1 }}
             aria-label="Slower"
@@ -358,6 +354,7 @@ export default function SongPage({ song }: { song: Song }) {
           </span>
           <button
             onClick={() => setSpeed(s => Math.min(10, s + 1))}
+            onMouseEnter={e => e.currentTarget.focus()}
             disabled={speed >= 10}
             style={{ ...iconBtn, padding: '8px 12px', opacity: speed >= 10 ? 0.35 : 1 }}
             aria-label="Faster"

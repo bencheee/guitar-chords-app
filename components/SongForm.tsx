@@ -35,6 +35,7 @@ export default function SongForm({ song }: Props) {
   const [year, setYear]         = useState(song?.year?.toString() ?? '')
   const [key]                   = useState(song?.key ?? '')
   const [capo, setCapo]         = useState(song?.capo ?? 0)
+  const [speed, setSpeed]       = useState(song?.speed ?? 1)
   const [content, setContent]   = useState(song?.content ?? '')
   const [language, setLanguage] = useState<Language>(song?.language ?? 'en')
   const [error, setError]       = useState('')
@@ -57,6 +58,7 @@ export default function SongForm({ song }: Props) {
       year: year ? parseInt(year) : null,
       key: key.trim(),
       capo,
+      speed,
       language,
       content,
     }
@@ -162,16 +164,26 @@ export default function SongForm({ song }: Props) {
               </div>
             </div>
 
-            {/* Row 3: Capo */}
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Capo</label>
-              <select value={capo} onChange={e => setCapo(parseInt(e.target.value))} style={{ maxWidth: '200px' }}>
-                {CAPO_OPTIONS.map(n => (
-                  <option key={n} value={n}>
-                    {n === 0 ? 'No Capo' : `Capo ${n}`}
-                  </option>
-                ))}
-              </select>
+            {/* Row 3: Capo + Default Speed */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Capo</label>
+                <select value={capo} onChange={e => setCapo(parseInt(e.target.value))}>
+                  {CAPO_OPTIONS.map(n => (
+                    <option key={n} value={n}>
+                      {n === 0 ? 'No Capo' : `Capo ${n}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Default Speed</label>
+                <select value={speed} onChange={e => setSpeed(parseInt(e.target.value))}>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Chord format hint */}

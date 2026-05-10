@@ -7,6 +7,7 @@ export interface Song {
   album: string
   year: number | null
   capo: number
+  speed: number
   key: string
   language: Language
   content: string

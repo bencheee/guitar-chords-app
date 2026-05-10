@@ -306,6 +306,7 @@ export default function SongGrid({ songs }: Props) {
               ref={el => { cardRefs.current[idx] = el }}
               href={`/songs/${song.id}`}
               onKeyDown={e => handleCardKey(e, idx)}
+              onMouseEnter={e => e.currentTarget.focus()}
               tabIndex={0}
               className="song-row"
             >
@@ -329,6 +330,7 @@ export default function SongGrid({ songs }: Props) {
               ref={el => { cardRefs.current[idx] = el }}
               href={`/songs/${song.id}`}
               onKeyDown={e => handleCardKey(e, idx)}
+              onMouseEnter={e => e.currentTarget.focus()}
               tabIndex={0}
               className="song-card"
             >
