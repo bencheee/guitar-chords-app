@@ -1,8 +1,10 @@
 import Link from 'next/link'
+import SpatialNav from '@/components/SpatialNav'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <SpatialNav />
       <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
         <div className="page-header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

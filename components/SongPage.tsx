@@ -118,6 +118,15 @@ export default function SongPage({ song }: { song: Song }) {
           if (!lock || lock.released) await acquireNativeWakeLock()
         }, 25_000)
       }
+
+      // Dispatch synthetic pointer events every 15s to reset Samsung TV's
+      // OS-level sleep timer (the TV treats any pointer activity as user input)
+      const pointerInterval = setInterval(() => {
+        document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 1, clientY: 1 }))
+        document.dispatchEvent(new MouseEvent('mousemove',    { bubbles: true, clientX: 1, clientY: 1 }))
+      }, 15_000)
+
+      return () => clearInterval(pointerInterval)
     }
 
     setup()
@@ -335,7 +344,7 @@ export default function SongPage({ song }: { song: Song }) {
           onMouseEnter={e => e.currentTarget.focus()}
           className={`play-btn${playing ? ' playing' : ''}`}
         >
-          {playing ? '⏸ Pause' : '▶ Play'}
+          {playing ? '⏸︎ Pause' : '▶︎ Play'}
         </button>
 
         <div style={{ width: '1px', height: '28px', background: 'var(--line)', flexShrink: 0 }} />
